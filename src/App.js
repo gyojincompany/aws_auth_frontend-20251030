@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import api from "./axiosConfig";
 
@@ -6,14 +6,21 @@ function App() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [token, setToken] = useState("" || localStorage.getItem("token"));
+  //localStorage -> 웹브라우저에서 기본적으로 가지고 있는 저장소
+
+  useEffect(() => {
+    if (token) {
+      userloginCheck();
+    }
+  }, []);
 
   //회원 가입
   const signUp = async (e) => {
     try {
       await api.post(
         "/api/auth/signup",
-        new URLSearchParams({ username, password })
-        //파라미터 넘기기
+        { username, password } //JSON 타입으로 넘기기
       );
       setMessage(username + "님 회원가입 성공하셨습니다!");
     } catch (err) {
@@ -25,10 +32,9 @@ function App() {
   //회원 로그인
   const login = async (e) => {
     try {
-      await api.post(
-        "/api/auth/login",
-        new URLSearchParams({ username, password })
-      );
+      const res = await api.post("/api/auth/login", { username, password });
+      setToken(res.data.token); //로그인 성공 후 받은 토큰 값 저장
+      localStorage.setItem("token", res.data.token);
       setMessage(username + "님 로그인 성공하셨습니다!");
     } catch (err) {
       console.error(err);
@@ -37,15 +43,33 @@ function App() {
   };
 
   //회원 로그아웃
-  const logout = async () => {
-    await api.post("/api/auth/logout");
+  const logout = () => {
+    userloginCheck();
+    localStorage.removeItem("token");
+    //토큰 삭제->로그아웃
+    setToken(""); //토큰값 초기화
+
     setMessage(username + "님 로그아웃 성공하셨습니다!");
   };
 
   //로그인한 사용자 확인
   const userloginCheck = async () => {
-    const res = await api.get("/api/auth/me");
-    setMessage("현재 로그인한 사용자는 " + res.data.username + "님 입니다.");
+    try {
+      if (!token) {
+        //참이면->로그인 X
+        alert("로그인 후 로그인 사용자 정보 확인 가능합니다.");
+        return;
+      }
+
+      const res = await api.get("/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMessage("현재 로그인한 사용자는 " + res.data.username + "님 입니다.");
+      setUsername(res.data.username);
+    } catch (err) {
+      console.error(err);
+      alert("로그인 중인 사용자의 정보를 가져올 수 없습니다!");
+    }
   };
 
   return (
