@@ -42,6 +42,12 @@ function App() {
     setMessage(username + "님 로그아웃 성공하셨습니다!");
   };
 
+  //로그인한 사용자 확인
+  const userloginCheck = async () => {
+    const res = await api.get("/api/auth/me");
+    setMessage("현재 로그인한 사용자는 " + res.data.username + "님 입니다.");
+  };
+
   return (
     <div className="App">
       <h1>회원 로그인</h1>
@@ -61,6 +67,8 @@ function App() {
       <hr />
       <button onClick={login}>로그인</button>
       <button onClick={logout}>로그아웃</button>
+      <hr />
+      <button onClick={userloginCheck}>로그인한 사용자 확인</button>
       <hr />
       <h2>백엔드 응답 : {message}</h2>
     </div>
