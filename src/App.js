@@ -44,10 +44,11 @@ function App() {
 
   //회원 로그아웃
   const logout = () => {
-    userloginCheck();
     localStorage.removeItem("token");
     //토큰 삭제->로그아웃
     setToken(""); //토큰값 초기화
+    setUsername(""); //사용자 이름 초기화
+    setPassword(""); //비밀번호 초기화
 
     setMessage(username + "님 로그아웃 성공하셨습니다!");
   };
